@@ -12,9 +12,10 @@ class OasisAndSandInstabilitySensor:
                 self.sensors.append(sensor)
 
     def extrapolate(self):
-        extrapolated_values = [s.get_next_value() for s in self.sensors]
-        print(extrapolated_values)
-        return extrapolated_values
+        return [s.get_next_value() for s in self.sensors]
+
+    def extrapolate_backwards(self):
+        return [s.get_previous_value() for s in self.sensors]
 
 
 class SensorReadings:
@@ -24,7 +25,6 @@ class SensorReadings:
             if isinstance(readings, str)
             else readings
         )
-        # self.common_differences, self.rate = self._get_common_differences()
 
     def __repr__(self) -> str:
         return str(self.readings)
@@ -51,3 +51,18 @@ class SensorReadings:
             sensor.readings.append(next_el)
 
         return self.readings[-1]
+
+    def get_previous_value(self) -> int:
+        curr_cd = self.get_common_differences()
+        sensors = [self]
+        while any(map(lambda x: x != 0, curr_cd)):
+            new_sensor = SensorReadings(curr_cd)
+            curr_cd = new_sensor.get_common_differences()
+            sensors.append(new_sensor)
+
+        prev_el = 0
+        for sensor in reversed(sensors):
+            prev_el = sensor.readings[0] - prev_el
+            sensor.readings.insert(0, prev_el)
+
+        return self.readings[0]

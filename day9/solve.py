@@ -8,7 +8,7 @@ def main():
     oasis_and_sand_instability_sensor = OasisAndSandInstabilitySensor(input_path)
     print(
         "The sum of extrapolated values is:"
-        f" {sum(oasis_and_sand_instability_sensor.extrapolate())}"
+        f" {sum(oasis_and_sand_instability_sensor.extrapolate_backwards())}"
     )
 
 
