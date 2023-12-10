@@ -10,17 +10,15 @@ class NetworkMap:
                 line = line.strip()
                 if line != "":
                     node = Node(line)
-                    if node.name not in self.nodes:
-                        self.nodes[node.name] = node
+                    if node.get_name() not in self.nodes:
+                        self.nodes[node.get_name()] = node
 
-        assert "AAA" in self.nodes, "Invalid input, start not present"
-        assert "ZZZ" in self.nodes, "Invalid input, end not present"
-        self.start = self.nodes["AAA"]
-        self.end = self.nodes["ZZZ"]
+        self.start = {self.nodes[k] for k in self.nodes.keys() if k.endswith("A")}
+        self.end = {self.nodes[k] for k in self.nodes.keys() if k.endswith("Z")}
 
         self.instruction_counter = 0
 
-    def get_next_instruction(self):
+    def get_next_instruction(self) -> int:
         next_instruction = self.instructions[self.instruction_counter]
         self.instruction_counter += 1
 
@@ -29,42 +27,47 @@ class NetworkMap:
 
         return next_instruction
 
-    def follow_instructions(self):
-        curr_node = self.start
-        count = 0
-        while curr_node != self.end:
-            instruction = self.get_next_instruction()
-            next_node_name = curr_node.get_direction(instruction)
+    def reset_instruction_counter(self) -> int:
+        self.instruction_counter = 0
 
-            if next_node_name not in self.nodes:
-                print(next_node_name)
-                print(self.nodes)
-                raise KeyError(f"Node {next_node_name} not in NetworkMap")
+    def follow_instructions(self) -> list[int]:
+        counts = []
+        for start in self.start:
+            curr_node = start
+            self.reset_instruction_counter()
+            count = 0
 
-            curr_node = self.nodes[next_node_name]
-            count += 1
+            while curr_node not in self.end:
+                instruction = self.get_next_instruction()
+                next_node_name = curr_node.get_direction(instruction)
 
-        return count
+                if next_node_name not in self.nodes:
+                    print(next_node_name)
+                    print(self.nodes)
+                    raise KeyError(f"Node {next_node_name} not in NetworkMap")
+
+                curr_node = self.nodes[next_node_name]
+                count += 1
+
+            counts.append(count)
+
+        return counts
 
 
 class Node:
     def __init__(self, node_line: str):
-        print(node_line)
         name, raw_dest = node_line.split("=", maxsplit=1)
         self.name = name.strip()
         self.left = raw_dest.strip().split(",", maxsplit=1)[0][1:]
         self.right = raw_dest.split(",", maxsplit=1)[1].strip()[:-1]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.name
 
-    # def get_left(self):
-    #     return self.left
+    def get_name(self) -> str:
+        return self.name
 
-    # def get_right(self):
-    #     return self.right
-
-    def get_direction(self, direction):
+    def get_direction(self, direction) -> str:
         if direction == "L":
             return self.left
         if direction == "R":
