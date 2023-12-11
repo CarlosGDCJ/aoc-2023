@@ -72,7 +72,13 @@ class PipesMap:
         neighbors = []
         for x, y in tile.get_neighbors_increments():
             if 0 <= tile.row + x < self.num_rows and 0 <= tile.col + y < self.num_cols:
-                if self.map[tile.row + x][tile.col + y].symbol != TileType.GROUND:
+                if tile == self.start:
+                    # this may be the worst way to do this btw
+                    if self.start in self.get_valid_neighbors(
+                        self.map[tile.row + x][tile.col + y]
+                    ):
+                        neighbors.append(self.map[tile.row + x][tile.col + y])
+                elif self.map[tile.row + x][tile.col + y].symbol != TileType.GROUND:
                     neighbors.append(self.map[tile.row + x][tile.col + y])
 
         return neighbors
@@ -88,18 +94,17 @@ class PipesMap:
 
         # stop when we find start again
         while not start_found:
-            next_, parent = stack.pop()
+            curr, parent = stack.pop()
 
-            # explore next_
-            visited.add(next_)
-            visited_map[next_] = parent
+            # explore curr
+            visited.add(curr)
+            visited_map[curr] = parent
 
-            for n in self.get_valid_neighbors(next_):
+            for n in self.get_valid_neighbors(curr):
                 if n not in visited:
-                    stack.append((n, next_))
-                elif n == start and visited_map[next_] != start:
+                    stack.append((n, curr))
+                elif n == start and visited_map[curr] != start:
                     start_found = True
-                    curr = next_
                     break
 
         # get the loop (path from start back start)
