@@ -139,3 +139,31 @@ class PipesMap:
     #                 q.append((n, steps_from_start + 1))
 
     #     return sorted(distances, key=lambda x: x[1], reverse=True)
+
+    def is_inside(self, tile: MapTile, pipe_loop: list[MapTile]) -> bool:
+        # Ray casting
+        # https://gist.github.com/inside-code-yt/7064d1d1553a2ee117e60217cfd1d099
+        intersec_points = 0
+        xp, yp = tile.row, tile.col
+
+        for i in range(len(pipe_loop) - 1):
+            x1, y1 = pipe_loop[i].row, pipe_loop[i].col
+            x2, y2 = pipe_loop[i + 1].row, pipe_loop[i + 1].col
+
+            if (yp < y1) != (yp < y2) and xp < x1 + ((yp - y1) / (y2 - y1)) * (x2 - x1):
+                intersec_points += 1
+
+        return intersec_points % 2 != 0
+
+    def count_tiles_inside(self, pipe_loop: list[MapTile]) -> int:
+        count = 0
+        for row in self.map:
+            for tile in row:
+                if tile not in pipe_loop:
+                    if self.is_inside(tile, pipe_loop):
+                        tile.symbol = "I"
+                        count += 1
+                    else:
+                        tile.symbol = "O"
+
+        return count
